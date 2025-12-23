@@ -2,43 +2,64 @@ require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
-const { Pool } = require('pg');
+const { createClient } = require('@supabase/supabase-js');
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 app.use(helmet());
 app.use(express.json());
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-});
-
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.get('/api/portfolio', async (req, res) => {
   try {
-    const q = `SELECT id, title, description, category, image_url, thumbnail_url, style, duration, size, is_featured FROM portfolio_items ORDER BY display_order NULLS LAST, created_at DESC LIMIT 200`;
-    const { rows } = await pool.query(q);
-    res.json(rows);
+    const { data, error } = await supabase
+      .from('portfolio_items')
+      .select('id, title, description, category, image_url, thumbnail_url, style, duration, size, is_featured')
+      .order('display_order', { nulls: 'last' })
+      .order('created_at', { ascending: false })
+      .limit(200);
+
+    if (error) throw error;
+
+    res.json(data);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'database error' });
+    console.error('Error fetching portfolio items:', err);
+    res.status(500).json({ error: 'Database error while fetching portfolio items.' });
   }
 });
 
 app.post('/api/booking', async (req, res) => {
   const { name, email, phone, preferred_date, appointment_type, anime_reference, message } = req.body;
-  if (!name || !email || !message) return res.status(400).json({ error: 'name, email, message required' });
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'The fields name, email, and message are required.' });
+  }
 
   try {
-    const q = `INSERT INTO bookings (name, email, phone, preferred_date, appointment_type, anime_reference, message) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, status, created_at`;
-    const vals = [name, email, phone || null, preferred_date || null, appointment_type || null, anime_reference || null, message];
-    const { rows } = await pool.query(q, vals);
-    res.status(201).json(rows[0]);
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([{ 
+        name, 
+        email, 
+        phone, 
+        preferred_date, 
+        appointment_type, 
+        anime_reference, 
+        message 
+      }])
+      .select('id, status, created_at');
+
+    if (error) throw error;
+
+    res.status(201).json(data[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'database insert error' });
+    console.error('Error creating booking:', err);
+    res.status(500).json({ error: 'Database error while creating a booking.' });
   }
 });
 
