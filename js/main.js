@@ -358,7 +358,7 @@ const sizeToPrice = {
     'extra-large': '$1200+'
 };
 
-const generateDesignConcept = () => {
+const generateDesignConcept = async () => {
     const description = tattooDescription.value.trim();
     const selectedAnimeStyle = animeStyle.value;
     const selectedTattooStyle = tattooStyle.value;
@@ -382,134 +382,162 @@ const generateDesignConcept = () => {
     `;
     
     // Add loading spinner styles dynamically
-    const style = document.createElement('style');
-    style.textContent = `
-        .preview-loading {
-            text-align: center;
-            padding: 40px;
-        }
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid rgba(255, 107, 157, 0.2);
-            border-top-color: #ff6b9d;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(style);
+    if (!document.getElementById('loading-spinner-styles')) {
+        const style = document.createElement('style');
+        style.id = 'loading-spinner-styles';
+        style.textContent = `
+            .preview-loading {
+                text-align: center;
+                padding: 40px;
+            }
+            .loading-spinner {
+                width: 60px;
+                height: 60px;
+                border: 3px solid rgba(255, 107, 157, 0.2);
+                border-top-color: #ff6b9d;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
-    // Simulate AI generation (in production, this would call an actual API)
-    setTimeout(() => {
-        const designConcepts = [
-            '🎨 Dynamic action pose with flowing energy effects',
-            '✨ Detailed character portrait with symbolic elements',
-            '🌸 Scenic composition with Japanese aesthetics',
-            '🔥 Bold lines with dramatic shading',
-            '💫 Whimsical design with magical elements'
-        ];
-        
-        const randomConcept = designConcepts[Math.floor(Math.random() * designConcepts.length)];
+    try {
+        // Call the backend API
+        const response = await apiRequest('/design/generate', {
+            method: 'POST',
+            body: JSON.stringify({
+                description: description,
+                animeStyle: selectedAnimeStyle,
+                tattooStyle: selectedTattooStyle,
+                placement: selectedPlacement,
+                size: selectedSize,
+                colorPreference: selectedColor ? selectedColor.value : 'color'
+            })
+        });
+
+        // Add generated preview styles
+        if (!document.getElementById('preview-styles')) {
+            const previewStyle = document.createElement('style');
+            previewStyle.id = 'preview-styles';
+            previewStyle.textContent = `
+                .generated-preview {
+                    text-align: center;
+                    padding: 20px;
+                }
+                .preview-image-container {
+                    width: 280px;
+                    height: 280px;
+                    margin: 0 auto 20px;
+                    background: linear-gradient(135deg, #1a1a2e 0%, #252542 100%);
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 2px solid rgba(255, 107, 157, 0.3);
+                    position: relative;
+                    overflow: hidden;
+                }
+                .preview-image-container img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border-radius: 10px;
+                }
+                .preview-details h4 {
+                    color: #ff6b9d;
+                    margin-bottom: 12px;
+                }
+                .preview-details p {
+                    color: #b4b4c4;
+                    margin-bottom: 8px;
+                    font-size: 0.9rem;
+                }
+                .concept-tags {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    justify-content: center;
+                    margin: 16px 0;
+                }
+                .concept-tag {
+                    background: rgba(255, 107, 157, 0.1);
+                    color: #ff6b9d;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 0.8rem;
+                    text-transform: capitalize;
+                }
+                .preview-note {
+                    background: rgba(6, 214, 160, 0.1);
+                    color: #06d6a0 !important;
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin-top: 16px;
+                }
+                .preview-estimates {
+                    display: flex;
+                    justify-content: center;
+                    gap: 20px;
+                    margin-top: 12px;
+                    font-size: 0.85rem;
+                }
+                .preview-estimates span {
+                    color: #b4b4c4;
+                }
+                .preview-estimates strong {
+                    color: #ff6b9d;
+                }
+            `;
+            document.head.appendChild(previewStyle);
+        }
+
+        const concept = response.concept;
         
         previewCanvas.innerHTML = `
             <div class="generated-preview">
                 <div class="preview-image-container">
-                    <div class="preview-placeholder-art">
-                        <div class="art-icon">🎨</div>
-                        <div class="art-pattern"></div>
-                    </div>
+                    <img src="${escapeHtml(concept.imageUrl)}" alt="Generated tattoo design concept" />
                 </div>
                 <div class="preview-details">
-                    <h4>Design Concept Generated!</h4>
-                    <p><strong>Concept:</strong> ${escapeHtml(randomConcept)}</p>
-                    <p><strong>Description:</strong> ${escapeHtml(description.substring(0, 100))}${description.length > 100 ? '...' : ''}</p>
+                    <h4>✨ AI Design Generated!</h4>
                     <div class="concept-tags">
-                        ${selectedAnimeStyle ? `<span class="concept-tag">${escapeHtml(selectedAnimeStyle)}</span>` : ''}
-                        ${selectedTattooStyle ? `<span class="concept-tag">${escapeHtml(selectedTattooStyle)}</span>` : ''}
-                        ${selectedPlacement ? `<span class="concept-tag">${escapeHtml(selectedPlacement)}</span>` : ''}
+                        ${concept.animeStyle ? `<span class="concept-tag">${escapeHtml(concept.animeStyle)}</span>` : ''}
+                        ${concept.tattooStyle ? `<span class="concept-tag">${escapeHtml(concept.tattooStyle)}</span>` : ''}
+                        ${concept.placement ? `<span class="concept-tag">${escapeHtml(concept.placement)}</span>` : ''}
                     </div>
-                    <p class="preview-note">💡 Book a consultation to receive custom sketches based on this concept!</p>
+                    <div class="preview-estimates">
+                        <span>⏱️ <strong>${escapeHtml(concept.estimatedTime)}</strong></span>
+                        <span>💰 <strong>${escapeHtml(concept.estimatedPrice)}</strong></span>
+                    </div>
+                    <p class="preview-note">💡 Love this concept? Book a consultation for a custom sketch tailored to you!</p>
                 </div>
             </div>
         `;
         
-        // Add generated preview styles
-        const previewStyle = document.createElement('style');
-        previewStyle.textContent = `
-            .generated-preview {
-                text-align: center;
-                padding: 30px;
-            }
-            .preview-image-container {
-                width: 200px;
-                height: 200px;
-                margin: 0 auto 20px;
-                background: linear-gradient(135deg, #1a1a2e 0%, #252542 100%);
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border: 2px solid rgba(255, 107, 157, 0.3);
-                position: relative;
-                overflow: hidden;
-            }
-            .preview-placeholder-art {
-                text-align: center;
-            }
-            .art-icon {
-                font-size: 4rem;
-                animation: pulse 2s ease-in-out infinite;
-            }
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-            }
-            .preview-details h4 {
-                color: #ff6b9d;
-                margin-bottom: 12px;
-            }
-            .preview-details p {
-                color: #b4b4c4;
-                margin-bottom: 8px;
-                font-size: 0.9rem;
-            }
-            .concept-tags {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                justify-content: center;
-                margin: 16px 0;
-            }
-            .concept-tag {
-                background: rgba(255, 107, 157, 0.1);
-                color: #ff6b9d;
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                text-transform: capitalize;
-            }
-            .preview-note {
-                background: rgba(6, 214, 160, 0.1);
-                color: #06d6a0 !important;
-                padding: 12px;
-                border-radius: 8px;
-                margin-top: 16px;
-            }
-        `;
-        document.head.appendChild(previewStyle);
-        
-        // Update estimates
+        // Update estimates in sidebar
         if (selectedSize) {
-            estTime.textContent = sizeToTime[selectedSize];
-            estPrice.textContent = sizeToPrice[selectedSize];
+            estTime.textContent = concept.estimatedTime;
+            estPrice.textContent = concept.estimatedPrice;
         }
         
-        showNotification('Design concept generated! Book a consultation for custom sketches.', 'success');
-    }, 2500);
+        showNotification('Design generated! Book a consultation for custom sketches.', 'success');
+        
+    } catch (error) {
+        console.error('Design generation error:', error);
+        previewCanvas.innerHTML = `
+            <div class="preview-loading">
+                <div style="font-size: 3rem; margin-bottom: 16px;">😕</div>
+                <h4>Generation Failed</h4>
+                <p>${escapeHtml(error.message || 'Please try again')}</p>
+            </div>
+        `;
+        showNotification(error.message || 'Failed to generate design. Please try again.', 'error');
+    }
 };
 
 generateDesignBtn.addEventListener('click', generateDesignConcept);
