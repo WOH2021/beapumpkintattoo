@@ -2,66 +2,34 @@ require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
-const { createClient } = require('@supabase/supabase-js');
-
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 const app = express();
 app.use(helmet());
 app.use(express.json());
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 
+// Import routes
+const bookingRoutes = require('./routes/booking');
+const contactRoutes = require('./routes/contact');
+const newsletterRoutes = require('./routes/newsletter');
+const portfolioRoutes = require('./routes/portfolio');
+const blogRoutes = require('./routes/blog');
+const testimonialRoutes = require('./routes/testimonials');
+const designRoutes = require('./routes/design');
+const uploadRoutes = require('./routes/upload');
+const authRoutes = require('./routes/auth');
+
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
-app.get('/api/portfolio', async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('portfolio_items')
-      .select('id, title, description, category, image_url, thumbnail_url, style, duration, size, is_featured')
-      .order('display_order', { nulls: 'last' })
-      .order('created_at', { ascending: false })
-      .limit(200);
-
-    if (error) throw error;
-
-    res.json(data);
-  } catch (err) {
-    console.error('Error fetching portfolio items:', err);
-    res.status(500).json({ error: 'Database error while fetching portfolio items.' });
-  }
-});
-
-app.post('/api/booking', async (req, res) => {
-  const { name, email, phone, preferred_date, appointment_type, anime_reference, message } = req.body;
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: 'The fields name, email, and message are required.' });
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('bookings')
-      .insert([{ 
-        name, 
-        email, 
-        phone, 
-        preferred_date, 
-        appointment_type, 
-        anime_reference, 
-        message 
-      }])
-      .select('id, status, created_at');
-
-    if (error) throw error;
-
-    res.status(201).json(data[0]);
-  } catch (err) {
-    console.error('Error creating booking:', err);
-    res.status(500).json({ error: 'Database error while creating a booking.' });
-  }
-});
+// Mount routes
+app.use('/api/booking', bookingRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/blog', blogRoutes);
+app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/design', designRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`API listening on port ${PORT}`));
