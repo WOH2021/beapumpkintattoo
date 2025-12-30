@@ -1,17 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const { body, validationResult } = require('express-validator');
 const db = require('../db');
 const { authenticateToken, generateToken } = require('../middleware/auth');
 
-// POST /api/auth/login - Admin login
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// Validation middleware for login
+const loginValidation = [
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('password').notEmpty().withMessage('Password is required'),
+];
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+// Validation middleware for registration
+const registerValidation = [
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('name').optional().trim().escape(),
+];
+
+// POST /api/auth/login - Admin login
+// Note: authLimiter is applied in index.js via app.use
+router.post('/login', loginValidation, async (req, res) => {
+  try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg });
     }
+
+    const { email, password } = req.body;
 
     // Find user by email
     const { rows } = await db.query('SELECT * FROM users WHERE email = $1', [email]);

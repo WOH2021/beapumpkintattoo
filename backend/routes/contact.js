@@ -1,23 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const db = require('../db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
+// Validation middleware for contact form
+const contactValidation = [
+  body('name').trim().notEmpty().withMessage('Name is required').escape(),
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('message').trim().notEmpty().withMessage('Message is required').escape(),
+  body('subject').optional().trim().escape(),
+];
+
 // POST /api/contact - Submit contact form (public)
-router.post('/', async (req, res) => {
+router.post('/', contactValidation, async (req, res) => {
   try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg });
+    }
+
     const { name, email, subject, message } = req.body;
-
-    // Validate required fields
-    if (!name || !email || !message) {
-      return res.status(400).json({ error: 'Name, email, and message are required' });
-    }
-
-    // Simple email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
 
     const { rows } = await db.query(
       `INSERT INTO contact_submissions (name, email, subject, message)
