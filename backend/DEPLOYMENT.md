@@ -6,7 +6,7 @@
 |-----------|---------|-----|
 | Backend API | Render | `https://api.beapumpkintattoo.com` |
 | Database | Supabase | PostgreSQL |
-| Frontend | TBD | `https://beapumpkintattoo.com` |
+| Frontend | Namecheap | `https://beapumpkintattoo.com` |
 
 ---
 

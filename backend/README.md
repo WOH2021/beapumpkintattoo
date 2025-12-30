@@ -105,14 +105,22 @@ backend/
 │   ├── blog.js        # Blog CRUD
 │   ├── booking.js     # Booking submissions
 │   ├── contact.js     # Contact form
-│   ├── design.js      # Design tool (stub)
-│   ├── newsletter.js  # Newsletter subscriptions
+│   ├── design.js      # AI tattoo design generation\n│   ├── newsletter.js  # Newsletter subscriptions", "oldString": "│   ├── design.js      # Design tool (stub)\n│   ├── newsletter.js  # Newsletter subscriptions
 │   ├── portfolio.js   # Portfolio CRUD
 │   ├── testimonials.js # Testimonials CRUD
 │   └── upload.js      # File uploads (stub)
 └── db/
     └── init.sql       # Database schema
 ```
+
+## Security Features
+
+- **Rate Limiting:** 100 req/15min general, 5 req/15min for auth
+- **Input Validation:** express-validator on all endpoints  
+- **Helmet.js:** CSP, HSTS, XSS protection headers
+- **JWT Auth:** 24h expiration, bcrypt password hashing (10 rounds)
+- **CORS:** Restricted to frontend origin only
+- **Request Size Limit:** 10KB max body size
 
 ## Authentication
 

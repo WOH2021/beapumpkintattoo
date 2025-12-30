@@ -65,11 +65,38 @@ postgres://postgres.xxxxx:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/pos
 
 ---
 
-## Next Steps
+## Frontend Hosting
 
-- [ ] Deploy frontend to production host
-- [ ] Update placeholder content (address, phone, social links)
+| Component | Service | URL |
+|-----------|---------|-----|
+| Frontend | Namecheap Shared Hosting | `https://beapumpkintattoo.com` |
+| Location | `/home/icyyyctg/beapumpkintattoo.com/` | cPanel File Manager |
+
+---
+
+## Business Information ✅
+
+| Field | Value |
+|-------|-------|
+| Address | R. das Flores 236, 3º andar, 4050-264 Porto, Portugal |
+| Country | PT |
+| Currency | EUR |
+| Instagram | @bea.pumpkin.tattoo |
+| Phone/Email | Contact via Instagram/booking form only |
+
+---
+
+## Completed Tasks
+
+- [x] Deploy backend to Render
+- [x] Deploy frontend to Namecheap
+- [x] Update business info (Porto address)
+- [x] Add favicon/logo files
+- [x] Security hardening (rate limiting, validation, CSP)
+- [x] AI Design feature integration
+
+## Remaining Tasks
+
 - [ ] Add real portfolio images
-- [ ] Build admin panel UI
-- `/api/portfolio`
-- `/api/booking`
+- [ ] Build admin panel UI (optional)
+- [ ] Email integration (SendGrid)
