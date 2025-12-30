@@ -2,6 +2,35 @@
    BeaPumpkin Tattoo - Main JavaScript
    ============================================= */
 
+// ===== API Configuration =====
+const API_BASE_URL = 'https://api.beapumpkintattoo.com/api';
+
+// ===== API Helper Functions =====
+async function apiRequest(endpoint, options = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const config = {
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        },
+        ...options
+    };
+    
+    try {
+        const response = await fetch(url, config);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Something went wrong');
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
+}
+
 // DOM Elements
 const preloader = document.getElementById('preloader');
 const navbar = document.getElementById('navbar');
@@ -488,7 +517,7 @@ size.addEventListener('change', () => {
 });
 
 // ===== Booking Form Handling =====
-bookingForm.addEventListener('submit', (e) => {
+bookingForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     // Get form data
@@ -507,8 +536,24 @@ bookingForm.addEventListener('submit', (e) => {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
     submitBtn.disabled = true;
     
-    // Simulate form submission (in production, this would send to a server)
-    setTimeout(() => {
+    try {
+        // Map form fields to API expected fields
+        const bookingData = {
+            name: data.name,
+            email: data.email,
+            phone: data.phone || null,
+            preferred_date: data['preferred-date'] || null,
+            appointment_type: data['tattoo-type'],
+            anime_reference: data['anime-reference'] || null,
+            message: data.message,
+            reference_images: []
+        };
+        
+        await apiRequest('/booking', {
+            method: 'POST',
+            body: JSON.stringify(bookingData)
+        });
+        
         submitBtn.innerHTML = '<i class="fas fa-check"></i> Request Sent!';
         submitBtn.style.background = 'linear-gradient(135deg, #06d6a0 0%, #00b894 100%)';
         
@@ -521,7 +566,11 @@ bookingForm.addEventListener('submit', (e) => {
             submitBtn.style.background = '';
             submitBtn.disabled = false;
         }, 3000);
-    }, 2000);
+    } catch (error) {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        showNotification(error.message || 'Failed to send request. Please try again.', 'error');
+    }
 });
 
 // ===== File Upload Preview =====
@@ -727,8 +776,204 @@ Looking for anime tattoo inspiration? You're in the right place!
 Made with ❤️ and lots of anime references.
 `, 'font-size: 24px; font-weight: bold; color: #ff6b9d;', 'font-size: 12px; color: #7c3aed;');
 
+// ===== Load Testimonials from API =====
+async function loadTestimonials() {
+    try {
+        const testimonials = await apiRequest('/testimonials');
+        
+        if (testimonials && testimonials.length > 0) {
+            const slider = document.getElementById('testimonials-slider');
+            slider.innerHTML = ''; // Clear existing testimonials
+            
+            testimonials.forEach(testimonial => {
+                const card = createTestimonialCard(testimonial);
+                slider.appendChild(card);
+            });
+            
+            // Reinitialize slider dots
+            reinitializeSlider();
+        }
+    } catch (error) {
+        console.log('Using default testimonials (API unavailable)');
+    }
+}
+
+function createTestimonialCard(testimonial) {
+    const card = document.createElement('div');
+    card.className = 'testimonial-card';
+    
+    // Generate star rating
+    const stars = '★'.repeat(testimonial.rating || 5) + '☆'.repeat(5 - (testimonial.rating || 5));
+    const starIcons = Array(testimonial.rating || 5).fill('<i class="fas fa-star"></i>').join('');
+    
+    // Get initials for avatar
+    const initials = testimonial.client_name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    
+    card.innerHTML = `
+        <div class="testimonial-rating">
+            ${starIcons}
+        </div>
+        <p class="testimonial-text">"${testimonial.review}"</p>
+        <div class="testimonial-author">
+            <div class="author-avatar">
+                ${testimonial.avatar_url 
+                    ? `<img src="${testimonial.avatar_url}" alt="${testimonial.client_name}">` 
+                    : `<span>${initials}</span>`}
+            </div>
+            <div class="author-info">
+                <h4>${testimonial.client_name}</h4>
+                <span>${testimonial.tattoo_type || 'Anime Tattoo'}</span>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+function reinitializeSlider() {
+    // Get new cards
+    const cards = testimonialSlider.querySelectorAll('.testimonial-card');
+    const total = cards.length;
+    
+    // Clear and recreate dots
+    sliderDots.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('slider-dot');
+        if (i === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => {
+            currentSlide = i;
+            const cardWidth = cards[0].offsetWidth + 24;
+            testimonialSlider.scrollTo({
+                left: cardWidth * currentSlide,
+                behavior: 'smooth'
+            });
+            sliderDots.querySelectorAll('.slider-dot').forEach((d, idx) => {
+                d.classList.toggle('active', idx === currentSlide);
+            });
+        });
+        sliderDots.appendChild(dot);
+    }
+    
+    // Reset to first slide
+    currentSlide = 0;
+    testimonialSlider.scrollTo({ left: 0, behavior: 'auto' });
+}
+
+// ===== Load Portfolio from API =====
+async function loadPortfolio() {
+    try {
+        const portfolioItems = await apiRequest('/portfolio');
+        
+        if (portfolioItems && portfolioItems.length > 0) {
+            const grid = document.getElementById('portfolio-grid');
+            grid.innerHTML = ''; // Clear existing items
+            
+            portfolioItems.forEach(item => {
+                const portfolioItem = createPortfolioItem(item);
+                grid.appendChild(portfolioItem);
+            });
+            
+            // Reinitialize filter buttons
+            reinitializePortfolioFilters();
+        }
+    } catch (error) {
+        console.log('Using default portfolio (API unavailable)');
+    }
+}
+
+function createPortfolioItem(item) {
+    const div = document.createElement('div');
+    div.className = 'portfolio-item';
+    div.setAttribute('data-category', (item.category || 'anime').toLowerCase().replace(/\s+/g, '-'));
+    
+    div.innerHTML = `
+        <div class="portfolio-image">
+            ${item.image_url 
+                ? `<img src="${item.image_url}" alt="${item.title}" loading="lazy">` 
+                : `<div class="image-placeholder"><i class="fas fa-image"></i></div>`}
+            <div class="portfolio-overlay">
+                <div class="overlay-content">
+                    <h3>${item.title}</h3>
+                    <p>${item.description || ''}</p>
+                    <div class="overlay-actions">
+                        <button class="action-btn" title="View Details" data-id="${item.id}"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn" title="Save"><i class="fas fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="portfolio-info">
+            <span class="portfolio-category">${item.category || 'Anime'}</span>
+            <h4>${item.title}</h4>
+        </div>
+    `;
+    
+    // Add click handler for modal
+    div.addEventListener('click', () => openPortfolioModal(item));
+    
+    return div;
+}
+
+function openPortfolioModal(item) {
+    const modal = document.getElementById('portfolio-modal');
+    if (!modal) return;
+    
+    modal.querySelector('.modal-info h3').textContent = item.title;
+    modal.querySelector('.modal-category').textContent = item.category || 'Anime';
+    modal.querySelector('.modal-description').textContent = item.description || 'A beautiful anime-inspired tattoo design.';
+    
+    const details = modal.querySelector('.modal-details');
+    if (details) {
+        details.innerHTML = `
+            <span><i class="fas fa-clock"></i> Duration: ${item.duration || 'Varies'}</span>
+            <span><i class="fas fa-ruler"></i> Size: ${item.size || 'Custom'}</span>
+        `;
+    }
+    
+    const modalImage = modal.querySelector('.modal-image');
+    if (item.image_url) {
+        modalImage.innerHTML = `<img src="${item.image_url}" alt="${item.title}">`;
+    }
+    
+    modal.classList.add('active');
+}
+
+function reinitializePortfolioFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const filter = btn.getAttribute('data-filter');
+            
+            portfolioItems.forEach(item => {
+                if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                    item.style.display = 'block';
+                    item.classList.add('animate');
+                } else {
+                    item.style.display = 'none';
+                    item.classList.remove('animate');
+                }
+            });
+        });
+    });
+}
+
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', () => {
     // Set initial body overflow
     document.body.style.overflow = 'hidden';
+    
+    // Load data from API (will use fallbacks if API unavailable)
+    loadTestimonials();
+    loadPortfolio();
 });
