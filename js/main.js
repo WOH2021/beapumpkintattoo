@@ -33,6 +33,13 @@ async function apiRequest(endpoint, options = {}) {
 
 // DOM Elements
 const preloader = document.getElementById('preloader');
+
+// ===== Security: HTML Escape Utility =====
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 const navbar = document.getElementById('navbar');
 const navToggle = document.getElementById('nav-toggle');
 const navMenu = document.getElementById('nav-menu');
@@ -418,12 +425,12 @@ const generateDesignConcept = () => {
                 </div>
                 <div class="preview-details">
                     <h4>Design Concept Generated!</h4>
-                    <p><strong>Concept:</strong> ${randomConcept}</p>
-                    <p><strong>Description:</strong> ${description.substring(0, 100)}${description.length > 100 ? '...' : ''}</p>
+                    <p><strong>Concept:</strong> ${escapeHtml(randomConcept)}</p>
+                    <p><strong>Description:</strong> ${escapeHtml(description.substring(0, 100))}${description.length > 100 ? '...' : ''}</p>
                     <div class="concept-tags">
-                        ${selectedAnimeStyle ? `<span class="concept-tag">${selectedAnimeStyle}</span>` : ''}
-                        ${selectedTattooStyle ? `<span class="concept-tag">${selectedTattooStyle}</span>` : ''}
-                        ${selectedPlacement ? `<span class="concept-tag">${selectedPlacement}</span>` : ''}
+                        ${selectedAnimeStyle ? `<span class="concept-tag">${escapeHtml(selectedAnimeStyle)}</span>` : ''}
+                        ${selectedTattooStyle ? `<span class="concept-tag">${escapeHtml(selectedTattooStyle)}</span>` : ''}
+                        ${selectedPlacement ? `<span class="concept-tag">${escapeHtml(selectedPlacement)}</span>` : ''}
                     </div>
                     <p class="preview-note">💡 Book a consultation to receive custom sketches based on this concept!</p>
                 </div>
@@ -628,7 +635,7 @@ const showNotification = (message, type = 'info') => {
     notification.innerHTML = `
         <div class="notification-content">
             <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-            <span>${message}</span>
+            <span>${escapeHtml(message)}</span>
         </div>
         <button class="notification-close"><i class="fas fa-times"></i></button>
     `;
