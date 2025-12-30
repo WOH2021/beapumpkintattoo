@@ -1,0 +1,22 @@
+# BeaPumpkin Tattoo - Sitemap
+# https://www.sitemaps.org/protocol.html
+
+User-agent: *
+Allow: /
+
+# Allow all search engines to crawl all content
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap location
+Sitemap: https://beapumpkintattoo.com/sitemap.xml
+
+# Crawl-delay (optional - be gentle on server)
+Crawl-delay: 1
+
+# Disallow admin or sensitive areas (if any)
+Disallow: /admin/
+Disallow: /private/

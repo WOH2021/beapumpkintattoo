@@ -1,0 +1,248 @@
+/* About Page Styles */
+
+.page-hero {
+    padding: 150px 20px 80px;
+    background: var(--bg-darker);
+    text-align: center;
+    position: relative;
+}
+
+.page-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 60%);
+}
+
+.page-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.page-hero p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    position: relative;
+}
+
+.breadcrumb a {
+    color: var(--primary);
+}
+
+.about-full {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 60px;
+    align-items: start;
+}
+
+.about-image-full {
+    position: sticky;
+    top: 100px;
+}
+
+.artist-frame {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-card);
+}
+
+.artist-frame .image-placeholder {
+    aspect-ratio: 3/4;
+}
+
+.artist-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.artist-stat {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.artist-stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.artist-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.about-content-full h2 {
+    font-size: 2rem;
+    margin-bottom: 24px;
+}
+
+.about-content-full p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.8;
+}
+
+.story-section {
+    margin-bottom: 40px;
+}
+
+.story-section h3 {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    color: var(--primary);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+    border-left: 2px solid rgba(255, 107, 157, 0.3);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 30px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -36px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px var(--bg-dark);
+}
+
+.timeline-year {
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.timeline-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.timeline-desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.anime-favorites {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.favorite-item {
+    background: var(--bg-card);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    text-align: center;
+    transition: var(--transition-normal);
+}
+
+.favorite-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.favorite-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.favorite-name {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.certifications {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.cert-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 107, 157, 0.2);
+}
+
+.cert-badge i {
+    color: var(--accent);
+}
+
+.gallery-preview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+}
+
+.gallery-preview-item {
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+    .about-full {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-image-full {
+        position: relative;
+        top: 0;
+    }
+    
+    .anime-favorites {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .artist-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .gallery-preview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
