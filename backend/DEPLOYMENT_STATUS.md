@@ -1,62 +1,75 @@
-Deployment status snapshot
+# Deployment Status
 
-## Previous Deployment Attempt: 2025-12-22 (Resolved)
+## Current Status: 2025-12-30 ✅ FULLY OPERATIONAL
 
-**Host attempted:** Render
-**Outcome:** Failed
-**Cause:** Render ran `npm install` at the repository root but the Node app lives in the `backend/` subdirectory. Render couldn't find `package.json` at the root.
-**Fix applied:** Set the Render service **Root Directory** to `backend`. This was successful.
+**Host:** Render  
+**API URL:** `https://api.beapumpkintattoo.com`  
+**Database:** Supabase (PostgreSQL)  
+**Status:** Live and fully functional
 
 ---
 
-## Current Status: 2025-12-23 (Successful)
+## What's Working
 
-**Host:** Render
-**Service URL:** `https://api.beapumpkintattoo.com`
-**Status:** Live and operational.
+| Feature | Status | Endpoint |
+|---------|--------|----------|
+| Health Check | ✅ | `GET /api/health` |
+| Portfolio | ✅ | `GET /api/portfolio` |
+| Testimonials | ✅ | `GET /api/testimonials` |
+| Bookings | ✅ | `POST /api/booking` |
+| Blog | ✅ | `GET /api/blog` |
+| Newsletter | ✅ | `POST /api/newsletter` |
+| Contact | ✅ | `POST /api/contact` |
+| Auth | ✅ | `POST /api/auth/login`, `/setup`, `/me` |
 
-**Details:**
-Following the fix to set the Root Directory to `backend`, the deployment on Render was successful. The API is live and responding. The `npm start` command correctly executed `node index.js`, and the service is listening on port 10000 as expected.
+---
 
-**Deployment Logs (2025-12-23):**
+## Environment Variables (Render)
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | Supabase Session Pooler connection string | ✅ |
+| `JWT_SECRET` | Secret for JWT token signing | ✅ |
+| `CORS_ORIGIN` | Allowed frontend origin (e.g., `https://beapumpkintattoo.com`) | Optional |
+| `PORT` | Auto-set by Render (10000) | Auto |
+
+---
+
+## Database Connection
+
+**Important:** Use Supabase **Session Pooler** connection string (IPv4 compatible):
 ```
-&gt; 2025-12-23T10:16:05.659996102Z ==&gt; It looks like we don't have access to your repo, but we'll try to clone it anyway.
-2025-12-23T10:16:05.660052205Z ==&gt; Cloning from https://github.com/WOH2021/beapumpkintattoo
-2025-12-23T10:16:06.280096766Z ==&gt; Checking out commit bc5364d9c3acb166a50e5e3d84269fdf3857950b in branch master
-2025-12-23T10:17:16.409922046Z ==&gt; Using Node.js version 22.16.0 (default)
-2025-12-23T10:17:16.434345384Z ==&gt; Docs on specifying a Node.js version: https://render.com/docs/node-version
-2025-12-23T10:17:18.545381783Z ==&gt; Running build command 'npm install'...
-2025-12-23T10:17:22.72106857Z 
-2025-12-23T10:17:22.721119772Z added 86 packages, and audited 87 packages in 4s
-2025-12-23T10:17:22.721140813Z 
-2025-12-23T10:17:22.721145414Z 16 packages are looking for funding
-2025-12-23T10:17:22.721150774Z   run `npm fund` for details
-2025-12-23T10:17:22.721881733Z 
-2025-12-23T10:17:22.721893944Z found 0 vulnerabilities
-2025-12-23T10:18:07.5475926Z ==&gt; Uploading build...
-2025-12-23T10:18:12.631352903Z ==&gt; Uploaded in 4.0s. Compression took 1.1s
-2025-12-23T10:18:12.65299554Z ==&gt; Build successful 🎉
-2025-12-23T10:18:21.363047024Z ==&gt; Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
-2025-12-23T10:18:21.507339743Z ==&gt; Deploying...
-2025-12-23T10:18:34.501229056Z ==&gt; Running 'npm start'
-2025-12-23T10:18:35.508621078Z 
-2025-12-23T10:18:35.508642299Z &gt; beapumpkintattoo-backend@0.1.0 start
-2025-12-23T10:18:35.508647769Z &gt; node index.js
-2025-12-23T10:18:35.508649509Z 
-2025-12-23T10:18:36.502506943Z API listening on port 10000
-2025-12-23T10:18:42.270937078Z ==&gt; Your service is live 🎉
-2025-12-23T10:18:42.671138792Z ==&gt; 
-2025-12-23T10:18:42.838244245Z ==&gt; ///////////////////////////////////////////////////////////
-2025-12-23T10:18:43.004405059Z ==&gt; 
-2025-12-23T10:18:43.166804853Z ==&gt; Available at your primary URL https://api.beapumpkintattoo.com + 1 more domain
-2025-12-23T10:18:43.329639406Z ==&gt; 
-2025-12-23T10:18:43.49261056Z ==&gt; ///////////////////////////////////////////////////////////
-2025-12-23T10:23:40.09008432Z ==&gt; Detected service running on port 10000
-2025-12-23T10:23:40.44501358Z ==&gt; Docs on specifying a port: https://render.com/docs/web-services#port-binding
+postgres://postgres.xxxxx:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
 ```
 
-**Next Steps:**
-The previous "what to check next" items can be considered resolved, as the service is now live. Future debugging can start with checking the live service endpoints.
-- `/api/health`
+❌ Do NOT use direct connection (IPv6 only, won't work on Render)
+
+---
+
+## Deployment History
+
+| Date | Change | Status |
+|------|--------|--------|
+| 2025-12-22 | Initial deployment attempt | Failed (wrong root dir) |
+| 2025-12-23 | Fixed root directory to `backend` | Success |
+| 2025-12-30 | Full API implementation + Auth | Success |
+| 2025-12-30 | Fixed database connection (IPv4) | Success |
+
+---
+
+## Admin Account
+
+- **Email:** `whalton.hippertt@hotmail.com`
+- **Setup endpoint:** `POST /api/auth/setup` (only works once)
+- **Login endpoint:** `POST /api/auth/login`
+
+---
+
+## Next Steps
+
+- [ ] Deploy frontend to production host
+- [ ] Update placeholder content (address, phone, social links)
+- [ ] Add real portfolio images
+- [ ] Build admin panel UI
 - `/api/portfolio`
 - `/api/booking`

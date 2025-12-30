@@ -1,83 +1,137 @@
-Resume deployment / TLS troubleshooting
+# Deployment Guide
 
-If the TLS handshake is failing when you test `https://api.beapumpkintattoo.com`, follow these steps to diagnose and resume later:
+## Current Production Setup
 
-1) Quick isolation
-   - Test the Render (or other host) service URL directly (bypasses DNS):
-     ```bash
-     curl -v https://<your-service>.onrender.com/api/health
-     ```
-   - If that succeeds but `api.beapumpkintattoo.com` fails, the problem is DNS or certificate issuance.
+| Component | Service | URL |
+|-----------|---------|-----|
+| Backend API | Render | `https://api.beapumpkintattoo.com` |
+| Database | Supabase | PostgreSQL |
+| Frontend | TBD | `https://beapumpkintattoo.com` |
 
-2) Check DNS (Namecheap)
-   - In Namecheap → Domain List → Manage → Advanced DNS:
-     - Confirm there's a CNAME record: Host `api` → Value: `<your-service>.onrender.com` (no extra dots)
-     - TTL: Automatic
-   - Use DNS check tools:
-     ```bash
-     nslookup api.beapumpkintattoo.com
-     dig +short api.beapumpkintattoo.com
-     ```
+---
 
-3) Check provider custom domain setup
-   - In Render dashboard → Service → Settings → Custom Domains:
-     - Confirm `api.beapumpkintattoo.com` is listed and shows "Verified".
-     - If not verified, re-trigger verification (Render shows instructions).
+## Render Configuration
 
-4) Check TLS certificate issuance
-   - In the host dashboard (Render) check TLS/SSL status for the custom domain.
-   - If TLS failed, try removing and re-adding the domain after DNS is correct.
-   - You can inspect the certificate via:
-     ```bash
-     openssl s_client -connect api.beapumpkintattoo.com:443 -servername api.beapumpkintattoo.com
-     ```
+### Service Settings
 
-5) Check logs on the hosting provider
-   - Render → Service → Logs. Look for app errors, port binding issues, or SSL-related errors.
+- **Root Directory:** `backend`
+- **Build Command:** `npm install`
+- **Start Command:** `npm start`
+- **Branch:** `main`
 
-6) Common gotchas
-   - CNAME points to the wrong hostname (typo).
-   - DNS hasn't propagated yet (wait up to 30 minutes; sometimes longer).
-   - Custom domain not added/verified in Render.
-   - Provider requires you to add root/A records instead of CNAME for apex (we use `api` subdomain so CNAME is correct).
-   - Firewall / corporate network blocking port 443 (try from a different network).
+### Environment Variables
 
-7) For temporary testing
-   - Set `CORS_ORIGIN='*'` in service env vars (only for testing) and hit the service.onrender.com URL.
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `DATABASE_URL` | `postgres://...pooler.supabase.com:5432/postgres` | Use Session Pooler (IPv4) |
+| `JWT_SECRET` | `<random-64-char-hex>` | Generate with `openssl rand -hex 32` |
+| `CORS_ORIGIN` | `https://beapumpkintattoo.com` | Frontend domain |
 
-8) Useful commands
-   ```bash
-   # test provider URL
-   curl -v https://<your-service>.onrender.com/api/health
+### Generate JWT Secret
 
-   # test your domain
-   curl -v https://api.beapumpkintattoo.com/api/health
+```bash
+openssl rand -hex 32
+```
 
-   # check TLS certificate
-   openssl s_client -showcerts -connect api.beapumpkintattoo.com:443 -servername api.beapumpkintattoo.com
+---
 
-   # DNS
-   dig +nocmd api.beapumpkintattoo.com any +multiline +noall +answer
-   ```
+## Supabase Database
 
-9) If the issue persists
-   - Copy the exact output of `curl -v` and `openssl s_client` and save here in `DEPLOYMENT_STATUS.md` so you can pick up later.
+### Connection String
 
--- Render build error: missing package.json
+**Important:** Render requires IPv4. Use the **Session Pooler** connection string:
 
-If Render's build log shows `Could not read package.json` (ENOENT) during `npm install`, it means Render is running commands at the repository root but your Node app lives in a subfolder (`backend/`). Fixes:
+```
+postgres://postgres.xxxxx:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+```
 
-A) Preferred (Render UI - set Root Directory)
-   1. Open Render dashboard → your service → Settings (or Edit Service).
-   2. Set **Root Directory** (or **Root**) to `backend` and save.
-   3. Keep Build Command `npm install` and Start Command `npm start`.
-   4. Redeploy.
+❌ Do NOT use direct connection (IPv6 only):
+```
+postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres
+```
 
-B) Quick alternative (change Build / Start commands)
-   - In Render service settings set:
-     - Build Command: `cd backend && npm install`
-     - Start Command: `cd backend && npm start`
-   - Save and redeploy.
+### Finding Connection String
+
+1. Supabase Dashboard → Your Project
+2. Click **Connect** button (top)
+3. Select **Session pooler**
+4. Copy and replace `[YOUR-PASSWORD]`
+
+---
+
+## Troubleshooting
+
+### TLS/SSL Issues
+
+```bash
+# Test API directly
+curl -v https://api.beapumpkintattoo.com/api/health
+
+# Check TLS certificate
+openssl s_client -connect api.beapumpkintattoo.com:443 -servername api.beapumpkintattoo.com
+```
+
+### DNS Issues
+
+```bash
+nslookup api.beapumpkintattoo.com
+dig +short api.beapumpkintattoo.com
+```
+
+### Database Connection Issues
+
+If you see `ENETUNREACH` or IPv6 errors:
+- Switch to Session Pooler connection string
+- Verify the DATABASE_URL in Render environment
+
+### CORS Issues
+
+If frontend gets blocked:
+1. Check `CORS_ORIGIN` matches your frontend domain exactly
+2. Include protocol: `https://beapumpkintattoo.com`
+3. For testing, temporarily set to `*`
+
+### Build Errors
+
+If "Could not read package.json":
+- Ensure **Root Directory** is set to `backend` in Render
+
+---
+
+## Deployment Checklist
+
+- [ ] Supabase database created
+- [ ] Tables created via `init.sql`
+- [ ] Seed data added
+- [ ] Render service created with root dir `backend`
+- [ ] `DATABASE_URL` set (Session Pooler)
+- [ ] `JWT_SECRET` generated and set
+- [ ] `CORS_ORIGIN` set to frontend domain
+- [ ] Custom domain `api.beapumpkintattoo.com` verified
+- [ ] Admin account created via `/api/auth/setup`
+
+---
+
+## Useful Commands
+
+```bash
+# Test health
+curl -s https://api.beapumpkintattoo.com/api/health
+
+# Test data endpoints
+curl -s https://api.beapumpkintattoo.com/api/portfolio
+curl -s https://api.beapumpkintattoo.com/api/testimonials
+
+# Test booking
+curl -X POST https://api.beapumpkintattoo.com/api/booking \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Test", "email": "test@test.com", "message": "Test"}'
+
+# Admin login
+curl -X POST https://api.beapumpkintattoo.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "password"}'
+```
 
 C) If you prefer IaC: add a `render.yaml` (optional) describing `rootDir: backend` so future deploys pick the subdirectory automatically.
 

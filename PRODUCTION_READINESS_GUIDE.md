@@ -7,36 +7,65 @@ This document outlines all the steps required to make the BeaPumpkin Tattoo webs
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Information to Update](#1-information-to-update)
-3. [Asset Requirements](#2-asset-requirements)
-4. [Backend Development](#3-backend-development)
-5. [Database Setup](#4-database-setup)
-6. [API Integrations](#5-api-integrations)
-7. [Hosting & Deployment](#6-hosting--deployment)
-8. [Security Checklist](#7-security-checklist)
-9. [Performance Optimization](#8-performance-optimization)
-10. [Legal & Compliance](#9-legal--compliance)
-11. [Testing Checklist](#10-testing-checklist)
-12. [Maintenance Plan](#11-maintenance-plan)
+2. [Current Status](#current-status)
+3. [Information to Update](#1-information-to-update)
+4. [Asset Requirements](#2-asset-requirements)
+5. [Backend Development](#3-backend-development)
+6. [Database Setup](#4-database-setup)
+7. [API Integrations](#5-api-integrations)
+8. [Hosting & Deployment](#6-hosting--deployment)
+9. [Security Checklist](#7-security-checklist)
+10. [Performance Optimization](#8-performance-optimization)
+11. [Legal & Compliance](#9-legal--compliance)
+12. [Testing Checklist](#10-testing-checklist)
+13. [Maintenance Plan](#11-maintenance-plan)
 
 ---
 
 ## Overview
 
-**Current State:** Static HTML/CSS/JS website with mock functionality  
-**Target State:** Fully functional production website with backend, database, and real integrations
+**Current State:** Backend fully deployed, frontend needs deployment  
+**Target State:** Fully functional production website with all integrations
 
-### Features Requiring Backend Implementation
+---
 
-| Feature | Current State | Production Requirement |
-|---------|---------------|----------------------|
-| Booking Form | Mock submission | Real form processing + email/calendar |
-| Design Tool | Simulated generation | AI image generation API |
-| Portfolio Gallery | Static items | CMS-managed content |
-| Blog | Static articles | CMS with admin panel |
-| Testimonials | Hardcoded | Database-driven with moderation |
-| Contact Form | Mock submission | Email integration |
-| File Uploads | Client-side only | Server storage (S3/similar) |
+## Current Status
+
+> **Last Updated:** January 2025
+
+### ✅ Completed
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| Backend API | ✅ Live | `https://api.beapumpkintattoo.com` |
+| Database | ✅ Connected | Supabase PostgreSQL |
+| Authentication | ✅ Implemented | JWT with bcrypt |
+| All API Routes | ✅ Working | booking, portfolio, testimonials, blog, newsletter, contact |
+| Admin Account | ✅ Created | `admin@beapumpkintattoo.com` |
+| Frontend Integration | ✅ Code Ready | API calls in `js/main.js` |
+
+### 🔄 In Progress / Remaining
+
+| Task | Priority | Notes |
+|------|----------|-------|
+| Deploy Frontend | High | Deploy static files to hosting |
+| Update Placeholder Content | High | Phone, address, social links |
+| Add Real Images | Medium | Portfolio, blog, about photos |
+| Email Integration | Medium | SendGrid for notifications |
+| Admin Panel UI | Low | Optional - can use Postman/curl |
+| AI Design Tool | Low | Optional enhancement |
+
+### Backend Features Implemented
+
+| Feature | Endpoint | Status |
+|---------|----------|--------|
+| Booking Form | `POST /api/booking` | ✅ Working |
+| Portfolio Gallery | `GET/POST/PUT/DELETE /api/portfolio` | ✅ Working |
+| Blog | `GET/POST/PUT /api/blog` | ✅ Working |
+| Testimonials | `GET/POST/PUT /api/testimonials` | ✅ Working |
+| Contact Form | `POST /api/contact` | ✅ Working |
+| Newsletter | `POST/DELETE /api/newsletter` | ✅ Working |
+| Authentication | `/api/auth/*` | ✅ Working |
 
 ---
 
@@ -154,91 +183,70 @@ Replace all image placeholders with real tattoo photos:
 
 ## 3. Backend Development
 
-### Recommended Tech Stack
+### Current Tech Stack (Implemented)
 
-**Option A: Node.js Stack (Recommended for JavaScript developers)**
 ```
-Backend: Node.js + Express.js
-Database: MongoDB or PostgreSQL
-ORM: Mongoose (MongoDB) or Prisma (PostgreSQL)
+Backend: Node.js + Express.js (deployed on Render)
+Database: PostgreSQL (Supabase)
+ORM: pg (node-postgres)
 Authentication: JWT + bcrypt
-File Storage: AWS S3 / Cloudinary
-Email: SendGrid / Nodemailer
+API URL: https://api.beapumpkintattoo.com
 ```
 
-**Option B: Python Stack**
-```
-Backend: FastAPI or Django
-Database: PostgreSQL
-ORM: SQLAlchemy or Django ORM
-File Storage: AWS S3 / Cloudinary
-Email: SendGrid
-```
+### ✅ Implemented API Endpoints
 
-**Option C: Serverless (Minimal maintenance)**
-```
-Backend: Vercel Functions / Netlify Functions
-Database: PlanetScale / Supabase
-File Storage: Cloudinary / Vercel Blob
-Email: Resend / SendGrid
-```
+| Method | Endpoint | Auth | Status |
+|--------|----------|------|--------|
+| GET | `/api/health` | None | ✅ Live |
+| POST | `/api/booking` | None | ✅ Working |
+| GET | `/api/booking/:id` | None | ✅ Working |
+| POST | `/api/contact` | None | ✅ Working |
+| GET | `/api/contact` | Admin | ✅ Working |
+| PUT | `/api/contact/:id/read` | Admin | ✅ Working |
+| POST | `/api/newsletter` | None | ✅ Working |
+| DELETE | `/api/newsletter` | None | ✅ Working |
+| GET | `/api/portfolio` | None | ✅ Working |
+| GET | `/api/portfolio/:id` | None | ✅ Working |
+| POST | `/api/portfolio` | Admin | ✅ Working |
+| PUT | `/api/portfolio/:id` | Admin | ✅ Working |
+| DELETE | `/api/portfolio/:id` | Admin | ✅ Working |
+| GET | `/api/blog` | None | ✅ Working |
+| GET | `/api/blog/:slug` | None | ✅ Working |
+| POST | `/api/blog` | Admin | ✅ Working |
+| PUT | `/api/blog/:slug` | Admin | ✅ Working |
+| GET | `/api/testimonials` | None | ✅ Working |
+| POST | `/api/testimonials` | None | ✅ Working |
+| PUT | `/api/testimonials/:id` | Admin | ✅ Working |
+| POST | `/api/auth/login` | None | ✅ Working |
+| POST | `/api/auth/logout` | None | ✅ Working |
+| GET | `/api/auth/me` | Auth | ✅ Working |
+| POST | `/api/auth/setup` | None | ✅ Used (disabled) |
 
-### Required API Endpoints
+### 🔄 Future Enhancements (Optional)
 
-```
-POST   /api/booking              - Submit booking request
-GET    /api/booking/:id          - Get booking status
-POST   /api/contact              - Submit contact form
-POST   /api/newsletter           - Subscribe to newsletter
-
-GET    /api/portfolio            - Get portfolio items
-GET    /api/portfolio/:id        - Get single portfolio item
-POST   /api/portfolio (admin)    - Create portfolio item
-PUT    /api/portfolio/:id        - Update portfolio item
-DELETE /api/portfolio/:id        - Delete portfolio item
-
-GET    /api/blog                 - Get blog posts
-GET    /api/blog/:slug           - Get single post
-POST   /api/blog (admin)         - Create post
-PUT    /api/blog/:slug           - Update post
-
-GET    /api/testimonials         - Get approved testimonials
-POST   /api/testimonials         - Submit testimonial
-PUT    /api/testimonials/:id     - Approve/reject (admin)
-
-POST   /api/design/generate      - Generate design concept
-POST   /api/upload               - Upload reference images
-
-POST   /api/auth/login           - Admin login
-POST   /api/auth/logout          - Admin logout
-GET    /api/auth/me              - Get current user
-```
-
-### Admin Panel Requirements
-
-Build or integrate an admin panel for:
-- [ ] Managing portfolio items (CRUD)
-- [ ] Managing blog posts (CRUD with rich text editor)
-- [ ] Viewing/managing booking requests
-- [ ] Moderating testimonials
-- [ ] Analytics dashboard
-
-**Recommended CMS Options:**
-- Strapi (Headless CMS, self-hosted)
-- Sanity.io (Headless CMS, hosted)
-- Payload CMS (Headless, Node.js)
-- Custom admin with React Admin
+- [ ] Admin Panel UI (React Admin or custom)
+- [ ] File Upload to S3/Cloudinary  
+- [ ] Email Notifications (SendGrid)
+- [ ] AI Design Tool API
 
 ---
 
 ## 4. Database Setup
 
-### Schema Design
+### Current Setup (Supabase PostgreSQL)
 
-#### PostgreSQL Schema
+**Connection:** Session Pooler (IPv4 compatible for Render)
+
+```
+postgres://postgres.xxxxx:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+```
+
+### ✅ Database Tables (Implemented)
+
+All tables created via `backend/db/init.sql`:
 
 ```sql
--- Users (Admin)
+-- Users (Admin) ✅
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -248,7 +256,7 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Portfolio Items
+-- Portfolio Items ✅
 CREATE TABLE portfolio_items (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -265,7 +273,7 @@ CREATE TABLE portfolio_items (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Blog Posts
+-- Blog Posts ✅
 CREATE TABLE blog_posts (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -282,7 +290,7 @@ CREATE TABLE blog_posts (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Bookings
+-- Bookings ✅
 CREATE TABLE bookings (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -292,14 +300,14 @@ CREATE TABLE bookings (
     appointment_type VARCHAR(100),
     anime_reference VARCHAR(255),
     message TEXT NOT NULL,
-    reference_images TEXT[], -- Array of URLs
+    reference_images TEXT[],
     status VARCHAR(50) DEFAULT 'pending',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Testimonials
+-- Testimonials ✅
 CREATE TABLE testimonials (
     id SERIAL PRIMARY KEY,
     client_name VARCHAR(255) NOT NULL,
@@ -313,7 +321,7 @@ CREATE TABLE testimonials (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Newsletter Subscribers
+-- Newsletter Subscribers ✅
 CREATE TABLE newsletter_subscribers (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -321,77 +329,26 @@ CREATE TABLE newsletter_subscribers (
     subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Design Tool Submissions (Optional - for analytics)
-CREATE TABLE design_submissions (
+-- Contact Submissions ✅
+CREATE TABLE contact_submissions (
     id SERIAL PRIMARY KEY,
-    description TEXT,
-    anime_style VARCHAR(100),
-    tattoo_style VARCHAR(100),
-    placement VARCHAR(100),
-    size VARCHAR(50),
-    color_preference VARCHAR(50),
-    session_id VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255),
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-#### MongoDB Schema (Alternative)
+### Seed Data
 
-```javascript
-// Portfolio Item
-{
-  _id: ObjectId,
-  title: String,
-  description: String,
-  category: String,
-  imageUrl: String,
-  thumbnailUrl: String,
-  style: String,
-  duration: String,
-  size: String,
-  isFeatured: Boolean,
-  displayOrder: Number,
-  createdAt: Date,
-  updatedAt: Date
-}
-
-// Booking
-{
-  _id: ObjectId,
-  name: String,
-  email: String,
-  phone: String,
-  preferredDate: Date,
-  appointmentType: String,
-  animeReference: String,
-  message: String,
-  referenceImages: [String],
-  status: String, // pending, confirmed, completed, cancelled
-  notes: String,
-  createdAt: Date,
-  updatedAt: Date
-}
-
-// Testimonial
-{
-  _id: ObjectId,
-  clientName: String,
-  clientEmail: String,
-  rating: Number,
-  review: String,
-  tattooType: String,
-  avatarUrl: String,
-  isApproved: Boolean,
-  displayOrder: Number,
-  createdAt: Date
-}
-```
-
+Sample data has been inserted for testing. Add more via Supabase SQL Editor or API.
 ---
 
 ## 5. API Integrations
 
-### Email Service (Required)
+### Email Service (To Do)
 
 **SendGrid Setup:**
 ```javascript
@@ -493,60 +450,47 @@ GOOGLE_SERVICE_ACCOUNT_KEY=path_to_key.json
 
 ## 6. Hosting & Deployment
 
-### Recommended Hosting Options
+### Current Setup ✅
 
-#### Option A: Vercel (Recommended for simplicity)
-```bash
-# Install Vercel CLI
-npm i -g vercel
+| Component | Service | URL |
+|-----------|---------|-----|
+| Backend | Render | `https://api.beapumpkintattoo.com` |
+| Database | Supabase | PostgreSQL |
+| Frontend | TBD | `https://beapumpkintattoo.com` |
 
-# Deploy
-vercel
-
-# Environment variables set in Vercel dashboard
-```
-
-**Pros:** Free tier, automatic deployments, serverless functions  
-**Cons:** Limited for heavy backend needs
-
-#### Option B: Netlify + Separate Backend
-```bash
-# Frontend on Netlify
-netlify deploy --prod
-
-# Backend on Railway/Render/Fly.io
-```
-
-#### Option C: VPS (Full control)
-- DigitalOcean Droplet ($6-12/month)
-- Linode
-- AWS EC2
-
-### Domain Setup
-
-1. Purchase domain (e.g., `beapumpkintattoo.com`)
-2. Configure DNS:
-   ```
-   A     @       xxx.xxx.xxx.xxx
-   CNAME www     your-hosting-url
-   MX    @       mail provider records
-   TXT   @       SPF/DKIM for email
-   ```
-
-3. SSL Certificate:
-   - Automatic with Vercel/Netlify
-   - Let's Encrypt for VPS
-
-### Environment Variables Checklist
+### Environment Variables (Render)
 
 ```env
-# Database
-DATABASE_URL=postgresql://user:pass@host:5432/db
+# Database (Session Pooler for IPv4)
+DATABASE_URL=postgres://postgres.xxx:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
 
-# Email
-SENDGRID_API_KEY=
-FROM_EMAIL=
-ADMIN_EMAIL=
+# Authentication
+JWT_SECRET=your_64_char_hex_secret
+
+# CORS
+CORS_ORIGIN=https://beapumpkintattoo.com
+
+# Optional
+NODE_ENV=production
+```
+
+### Frontend Deployment Options
+
+**Option A: Vercel (Recommended)**
+```bash
+npm i -g vercel
+vercel --prod
+```
+
+**Option B: Netlify**
+```bash
+npm i -g netlify-cli
+netlify deploy --prod
+```
+
+**Option C: GitHub Pages**
+- Push to `main` branch
+- Enable Pages in repo settings
 
 # File Storage
 CLOUDINARY_CLOUD_NAME=
@@ -572,30 +516,26 @@ BASE_URL=https://beapumpkintattoo.com
 
 ## 7. Security Checklist
 
-### Before Launch
+### ✅ Implemented
 
-- [ ] All API endpoints have proper authentication
-- [ ] Admin routes protected with JWT/sessions
-- [ ] Input validation on all forms (server-side)
-- [ ] SQL injection prevention (parameterized queries)
-- [ ] XSS prevention (sanitize user input)
-- [ ] CSRF tokens on forms
+- [x] API endpoints have proper authentication (admin routes protected)
+- [x] Admin routes protected with JWT
+- [x] Input validation on forms (server-side)
+- [x] SQL injection prevention (parameterized queries with pg)
+- [x] Secure password storage (bcrypt)
+- [x] HTTPS enforced (Render automatic SSL)
+- [x] CORS configured for production domain
+- [x] Environment variables secured (not in repo)
+- [x] `.env` in `.gitignore`
+
+### 🔄 To Do
+
 - [ ] Rate limiting on API endpoints
-- [ ] File upload validation (type, size limits)
-- [ ] Secure password storage (bcrypt, min 10 rounds)
-- [ ] HTTPS enforced (redirect HTTP to HTTPS)
-- [ ] Security headers configured:
-  ```
-  Content-Security-Policy
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  ```
-- [ ] Environment variables secured (not in repo)
-- [ ] `.env` in `.gitignore`
+- [ ] CSRF tokens on forms
+- [ ] File upload validation (when implemented)
+- [ ] Security headers (CSP, X-Frame-Options, etc.)
 - [ ] Dependencies audited (`npm audit`)
 - [ ] Remove console.logs in production
-- [ ] Error messages don't expose internal details
 
 ### CORS Configuration
 
@@ -799,35 +739,35 @@ pg_dump database_name > backup_$(date +%Y%m%d).sql
 
 ## Quick Start Checklist
 
-### Phase 1: Content & Assets (Week 1)
-- [ ] Replace all placeholder text
+### Phase 1: Content & Assets ⏳
+- [ ] Replace all placeholder text (phone, address, email)
 - [ ] Gather and optimize all images
 - [ ] Update contact information
 - [ ] Create social media accounts
 
-### Phase 2: Backend Setup (Weeks 2-3)
-- [ ] Choose and set up hosting
-- [ ] Set up database
-- [ ] Implement API endpoints
-- [ ] Set up email service
-- [ ] Set up file storage
+### Phase 2: Backend Setup ✅ COMPLETE
+- [x] Set up Render hosting
+- [x] Set up Supabase database
+- [x] Implement all API endpoints
+- [x] Create admin account
+- [ ] Set up email service (optional)
 
-### Phase 3: Integration (Week 4)
-- [ ] Connect frontend to backend
-- [ ] Test all forms
-- [ ] Implement admin panel
+### Phase 3: Integration ✅ COMPLETE
+- [x] Connect frontend to backend (`js/main.js`)
+- [x] Test all API endpoints
+- [ ] Deploy frontend to production host
 - [ ] Set up analytics
 
-### Phase 4: Launch Prep (Week 5)
+### Phase 4: Launch Prep ⏳
 - [ ] Security audit
 - [ ] Performance optimization
 - [ ] Cross-browser testing
 - [ ] Legal pages
 - [ ] SEO verification
 
-### Phase 5: Launch (Week 6)
-- [ ] DNS configuration
-- [ ] SSL setup
+### Phase 5: Launch ⏳
+- [ ] DNS configuration for frontend
+- [ ] SSL setup (automatic with Vercel/Netlify)
 - [ ] Go live
 - [ ] Submit to search engines
 - [ ] Announce on social media
@@ -836,14 +776,15 @@ pg_dump database_name > backup_$(date +%Y%m%d).sql
 
 ## Support Resources
 
+- **Backend Repo:** [github.com/WOH2021/beapumpkintattoo](https://github.com/WOH2021/beapumpkintattoo)
+- **API Documentation:** See [backend/README.md](backend/README.md)
+- **Deployment Guide:** See [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md)
 - **Node.js/Express:** [expressjs.com](https://expressjs.com)
 - **PostgreSQL:** [postgresql.org/docs](https://www.postgresql.org/docs/)
-- **MongoDB:** [docs.mongodb.com](https://docs.mongodb.com)
-- **SendGrid:** [docs.sendgrid.com](https://docs.sendgrid.com)
-- **Cloudinary:** [cloudinary.com/documentation](https://cloudinary.com/documentation)
-- **Vercel:** [vercel.com/docs](https://vercel.com/docs)
+- **Supabase:** [supabase.com/docs](https://supabase.com/docs)
+- **Render:** [render.com/docs](https://render.com/docs)
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: December 22, 2025*
+*Document Version: 2.0*  
+*Last Updated: January 2025*
