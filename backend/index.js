@@ -48,9 +48,25 @@ const authLimiter = rateLimit({
 // Apply general rate limiter to all requests
 app.use(generalLimiter);
 
-// CORS configuration
+// CORS configuration - support multiple origins
+const allowedOrigins = [
+  'https://beapumpkintattoo.com',
+  'https://www.beapumpkintattoo.com',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500'
+];
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
