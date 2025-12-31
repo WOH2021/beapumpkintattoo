@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Version marker for deployment tracking
-const VERSION = '1.5.0-2025-12-31'; // Return image as base64 to avoid client rate limits
+const VERSION = '1.6.0-2025-12-31'; // Fix Pollinations API endpoint to gen.pollinations.ai
 
 // Enhanced Helmet configuration
 app.use(helmet({

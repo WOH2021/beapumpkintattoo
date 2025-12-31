@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 
-// Pollinations.ai API with authentication for no rate limits
-const POLLINATIONS_API = 'https://image.pollinations.ai/prompt';
+// Pollinations.ai API - correct endpoint with auth support
+const POLLINATIONS_API = 'https://gen.pollinations.ai/image';
 const POLLINATIONS_API_KEY = process.env.POLLINATIONS_API_KEY;
 
 // Validation middleware
