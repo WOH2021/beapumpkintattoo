@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Version marker for deployment tracking
-const VERSION = '1.7.0-2025-12-31'; // Use query param auth and add timeout
+const VERSION = '1.8.0-2025-12-31'; // Add fallback from auth API to free API
 
 // Enhanced Helmet configuration
 app.use(helmet({

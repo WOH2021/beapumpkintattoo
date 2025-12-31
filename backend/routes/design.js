@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 
-// Pollinations.ai API - correct endpoint with auth support
-const POLLINATIONS_API = 'https://gen.pollinations.ai/image';
+// Pollinations.ai API endpoints
+const POLLINATIONS_FREE_API = 'https://image.pollinations.ai/prompt';
+const POLLINATIONS_AUTH_API = 'https://gen.pollinations.ai/image';
 const POLLINATIONS_API_KEY = process.env.POLLINATIONS_API_KEY;
 
 // Validation middleware
@@ -83,49 +84,48 @@ router.post('/generate', designValidation, async (req, res) => {
     
     console.log('Generating design with prompt:', prompt);
     
-    // Use Pollinations.ai with API key for no rate limits
+    // Use Pollinations.ai
     const encodedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
     
     let imageUrl;
     
-    // Fetch image with API key and convert to base64 to avoid client rate limits
+    // Try authenticated API first, fall back to free API
     if (POLLINATIONS_API_KEY) {
-      // Use query param auth method as per docs
-      const pollinationsUrl = `${POLLINATIONS_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&key=${POLLINATIONS_API_KEY}`;
-      console.log('Using authenticated Pollinations API');
+      // Use authenticated endpoint with API key
+      const authUrl = `${POLLINATIONS_AUTH_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&key=${POLLINATIONS_API_KEY}`;
+      console.log('Trying authenticated Pollinations API...');
       
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      const timeout = setTimeout(() => controller.abort(), 90000); // 90s timeout for image generation
       
       try {
-        const response = await fetch(pollinationsUrl, {
-          signal: controller.signal
-        });
+        const response = await fetch(authUrl, { signal: controller.signal });
         clearTimeout(timeout);
         
-        console.log('Pollinations response status:', response.status);
+        console.log('Auth API response status:', response.status);
         
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Pollinations API error:', response.status, errorText);
-          throw new Error(`Image generation failed: ${response.status}`);
+        if (response.ok) {
+          // Convert to base64 data URL to avoid client needing auth
+          const arrayBuffer = await response.arrayBuffer();
+          const base64 = Buffer.from(arrayBuffer).toString('base64');
+          const contentType = response.headers.get('content-type') || 'image/jpeg';
+          imageUrl = `data:${contentType};base64,${base64}`;
+          console.log('Successfully generated image with auth API');
+        } else {
+          // Fall back to free API URL (client will load directly)
+          console.log('Auth API failed, falling back to free API URL');
+          imageUrl = `${POLLINATIONS_FREE_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
         }
-      
-        // Convert to base64 data URL
-        const arrayBuffer = await response.arrayBuffer();
-        const base64 = Buffer.from(arrayBuffer).toString('base64');
-        const contentType = response.headers.get('content-type') || 'image/jpeg';
-        imageUrl = `data:${contentType};base64,${base64}`;
       } catch (fetchErr) {
         clearTimeout(timeout);
-        console.error('Fetch error:', fetchErr.message);
-        throw fetchErr;
+        console.log('Auth API error, falling back to free API URL:', fetchErr.message);
+        imageUrl = `${POLLINATIONS_FREE_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
       }
     } else {
-      // Fallback to unauthenticated URL (will hit rate limits)
-      const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
-      imageUrl = pollinationsUrl;
+      // No API key - use free API URL directly
+      console.log('No API key, using free API URL');
+      imageUrl = `${POLLINATIONS_FREE_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
     }
     
     // Get estimates
