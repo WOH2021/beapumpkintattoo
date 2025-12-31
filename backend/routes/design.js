@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 
-const API_BASE_URL = 'https://t2i.mcpcore.xyz';
-const API_ENDPOINT = '/generate'; // Direct endpoint, not /api/free/generate
+// Primary API - use Pollinations.ai directly (free, no auth required)
+const POLLINATIONS_API = 'https://image.pollinations.ai/prompt';
 
 // Validation middleware
 const designValidation = [
@@ -82,33 +82,15 @@ router.post('/generate', designValidation, async (req, res) => {
     
     console.log('Generating design with prompt:', prompt);
     
-    // Call the AI API
-    const response = await fetch(`${API_BASE_URL}${API_ENDPOINT}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: prompt,
-        model: 'turbo', // Fast model
-        orientation: 'square'
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      throw new Error('AI service unavailable');
-    }
-
-    // Parse JSON response (new API format)
-    const data = await response.json();
+    // Use Pollinations.ai - free image generation API
+    // URL format: https://image.pollinations.ai/prompt/{encoded_prompt}?width=512&height=512&seed=random&model=flux
+    const encodedPrompt = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 1000000);
+    const imageUrl = `${POLLINATIONS_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
     
-    if (!data.success || !data.imageUrl) {
-      console.error('AI API returned no image:', data);
-      return res.status(500).json({ error: data.error || 'Failed to generate image' });
-    }
-
-    const imageUrl = data.imageUrl;
-
+    // Verify the image URL is accessible (optional, adds latency)
+    // The URL itself is the image, so we just return it
+    
     // Get estimates
     const estimates = sizeEstimates[size] || sizeEstimates['medium'];
 
@@ -133,15 +115,14 @@ router.post('/generate', designValidation, async (req, res) => {
   }
 });
 
-// GET /api/design/models - Get available AI models
-router.get('/models', async (req, res) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/free/models`);
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch models' });
-  }
+// GET /api/design/styles - Get available styles info
+router.get('/styles', (req, res) => {
+  res.json({
+    animeStyles: ['shonen', 'shoujo', 'chibi', 'ghibli', 'realistic', 'minimalist'],
+    tattooStyles: ['traditional', 'neo-traditional', 'watercolor', 'blackwork', 'linework', 'dotwork'],
+    colorOptions: ['color', 'black-grey'],
+    sizes: Object.keys(sizeEstimates)
+  });
 });
 
 module.exports = router;

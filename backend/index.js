@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Version marker for deployment tracking
-const VERSION = '1.2.0-2025-12-31'; // Updated AI API endpoint
+const VERSION = '1.3.0-2025-12-31'; // Switch to Pollinations.ai for reliable image generation
 
 // Enhanced Helmet configuration
 app.use(helmet({
