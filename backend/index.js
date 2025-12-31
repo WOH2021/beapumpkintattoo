@@ -6,6 +6,9 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
+// Version marker for deployment tracking
+const VERSION = '1.1.0-2025-12-31';
+
 // Enhanced Helmet configuration
 app.use(helmet({
   contentSecurityPolicy: {
@@ -84,7 +87,7 @@ const designRoutes = require('./routes/design');
 const uploadRoutes = require('./routes/upload');
 const authRoutes = require('./routes/auth');
 
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.get('/api/health', (req, res) => res.json({ ok: true, version: VERSION }));
 
 // Mount routes
 app.use('/api/booking', bookingRoutes);
