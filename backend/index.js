@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Version marker for deployment tracking
-const VERSION = '1.8.0-2025-12-31'; // Add fallback from auth API to free API
+const VERSION = '1.9.0-2025-12-31'; // Use free API directly (auth API needs pollen credits)
 
 // Enhanced Helmet configuration
 app.use(helmet({
