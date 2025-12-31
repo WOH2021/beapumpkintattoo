@@ -86,36 +86,45 @@ router.post('/generate', designValidation, async (req, res) => {
     // Use Pollinations.ai with API key for no rate limits
     const encodedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
-    const pollinationsUrl = `${POLLINATIONS_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux`;
     
     let imageUrl;
     
     // Fetch image with API key and convert to base64 to avoid client rate limits
     if (POLLINATIONS_API_KEY) {
-      console.log('Using authenticated Pollinations API with key:', POLLINATIONS_API_KEY.substring(0, 8) + '...');
-      console.log('URL:', pollinationsUrl);
+      // Use query param auth method as per docs
+      const pollinationsUrl = `${POLLINATIONS_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&key=${POLLINATIONS_API_KEY}`;
+      console.log('Using authenticated Pollinations API');
       
-      const response = await fetch(pollinationsUrl, {
-        headers: {
-          'Authorization': `Bearer ${POLLINATIONS_API_KEY}`
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      
+      try {
+        const response = await fetch(pollinationsUrl, {
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        
+        console.log('Pollinations response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Pollinations API error:', response.status, errorText);
+          throw new Error(`Image generation failed: ${response.status}`);
         }
-      });
       
-      console.log('Pollinations response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Pollinations API error:', response.status, errorText);
-        throw new Error(`Image generation failed: ${response.status}`);
+        // Convert to base64 data URL
+        const arrayBuffer = await response.arrayBuffer();
+        const base64 = Buffer.from(arrayBuffer).toString('base64');
+        const contentType = response.headers.get('content-type') || 'image/jpeg';
+        imageUrl = `data:${contentType};base64,${base64}`;
+      } catch (fetchErr) {
+        clearTimeout(timeout);
+        console.error('Fetch error:', fetchErr.message);
+        throw fetchErr;
       }
-      
-      // Convert to base64 data URL
-      const arrayBuffer = await response.arrayBuffer();
-      const base64 = Buffer.from(arrayBuffer).toString('base64');
-      const contentType = response.headers.get('content-type') || 'image/jpeg';
-      imageUrl = `data:${contentType};base64,${base64}`;
     } else {
-      // Fallback to direct URL (may hit rate limits)
+      // Fallback to unauthenticated URL (will hit rate limits)
+      const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
       imageUrl = pollinationsUrl;
     }
     
