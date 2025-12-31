@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 
-// Primary API - use Pollinations.ai directly (free, no auth required)
+// Pollinations.ai API with authentication for no rate limits
 const POLLINATIONS_API = 'https://image.pollinations.ai/prompt';
+const POLLINATIONS_API_KEY = process.env.POLLINATIONS_API_KEY;
 
 // Validation middleware
 const designValidation = [
@@ -82,14 +83,26 @@ router.post('/generate', designValidation, async (req, res) => {
     
     console.log('Generating design with prompt:', prompt);
     
-    // Use Pollinations.ai - free image generation API
-    // URL format: https://image.pollinations.ai/prompt/{encoded_prompt}?width=512&height=512&seed=random&model=flux
+    // Use Pollinations.ai with API key for no rate limits
     const encodedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
     const imageUrl = `${POLLINATIONS_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
     
-    // Verify the image URL is accessible (optional, adds latency)
-    // The URL itself is the image, so we just return it
+    // If we have an API key, fetch the image to trigger generation with auth
+    // This ensures we're authenticated and not rate-limited
+    if (POLLINATIONS_API_KEY) {
+      console.log('Using authenticated Pollinations API');
+      const response = await fetch(imageUrl, {
+        headers: {
+          'Authorization': `Bearer ${POLLINATIONS_API_KEY}`
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Pollinations API error:', response.status);
+        throw new Error('Image generation failed');
+      }
+    }
     
     // Get estimates
     const estimates = sizeEstimates[size] || sizeEstimates['medium'];

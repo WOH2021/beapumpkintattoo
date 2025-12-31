@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Version marker for deployment tracking
-const VERSION = '1.3.0-2025-12-31'; // Switch to Pollinations.ai for reliable image generation
+const VERSION = '1.4.0-2025-12-31'; // Add Pollinations API key support
 
 // Enhanced Helmet configuration
 app.use(helmet({
