@@ -2109,6 +2109,37 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+/* Tablet navigation - switch to mobile nav earlier */
+@media (max-width: 1024px) {
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 100%;
+        max-width: 350px;
+        height: 100vh;
+        background: var(--bg-darker);
+        flex-direction: column;
+        justify-content: center;
+        gap: 16px;
+        padding: 40px;
+        transition: var(--transition-normal);
+    }
+    
+    .nav-menu.active {
+        right: 0;
+    }
+    
+    .nav-toggle {
+        display: flex;
+    }
+    
+    .nav-cta {
+        margin-left: 0;
+        margin-top: 16px;
+    }
+}
+
 @media (max-width: 768px) {
     .nav-menu {
         position: fixed;
