@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 
 const API_BASE_URL = 'https://t2i.mcpcore.xyz';
+const API_ENDPOINT = '/generate'; // Direct endpoint, not /api/free/generate
 
 // Validation middleware
 const designValidation = [
@@ -81,48 +82,32 @@ router.post('/generate', designValidation, async (req, res) => {
     
     console.log('Generating design with prompt:', prompt);
     
-    // Call the free AI API
-    const response = await fetch(`${API_BASE_URL}/api/free/generate`, {
+    // Call the AI API
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINT}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: prompt,
-        model: 'turbo' // Fast model
+        model: 'turbo', // Fast model
+        orientation: 'square'
       })
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AI API error:', response.status, errorText);
       throw new Error('AI service unavailable');
     }
 
-    // Parse SSE stream to get the final image URL
-    const text = await response.text();
-    const lines = text.split('\n');
-    let imageUrl = null;
-    let errorMessage = null;
-
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const data = JSON.parse(line.slice(6));
-          if (data.status === 'complete' && data.imageUrl) {
-            imageUrl = data.imageUrl;
-          } else if (data.status === 'error') {
-            errorMessage = data.message;
-          }
-        } catch (e) {
-          // Skip non-JSON lines
-        }
-      }
+    // Parse JSON response (new API format)
+    const data = await response.json();
+    
+    if (!data.success || !data.imageUrl) {
+      console.error('AI API returned no image:', data);
+      return res.status(500).json({ error: data.error || 'Failed to generate image' });
     }
 
-    if (errorMessage) {
-      return res.status(500).json({ error: errorMessage });
-    }
-
-    if (!imageUrl) {
-      return res.status(500).json({ error: 'Failed to generate image' });
-    }
+    const imageUrl = data.imageUrl;
 
     // Get estimates
     const estimates = sizeEstimates[size] || sizeEstimates['medium'];

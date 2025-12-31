@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Version marker for deployment tracking
-const VERSION = '1.1.0-2025-12-31';
+const VERSION = '1.2.0-2025-12-31'; // Updated AI API endpoint
 
 // Enhanced Helmet configuration
 app.use(helmet({
