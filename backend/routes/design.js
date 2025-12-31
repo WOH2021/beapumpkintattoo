@@ -86,22 +86,27 @@ router.post('/generate', designValidation, async (req, res) => {
     // Use Pollinations.ai with API key for no rate limits
     const encodedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
-    const pollinationsUrl = `${POLLINATIONS_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
+    const pollinationsUrl = `${POLLINATIONS_API}/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux`;
     
     let imageUrl;
     
     // Fetch image with API key and convert to base64 to avoid client rate limits
     if (POLLINATIONS_API_KEY) {
-      console.log('Using authenticated Pollinations API');
+      console.log('Using authenticated Pollinations API with key:', POLLINATIONS_API_KEY.substring(0, 8) + '...');
+      console.log('URL:', pollinationsUrl);
+      
       const response = await fetch(pollinationsUrl, {
         headers: {
           'Authorization': `Bearer ${POLLINATIONS_API_KEY}`
         }
       });
       
+      console.log('Pollinations response status:', response.status);
+      
       if (!response.ok) {
-        console.error('Pollinations API error:', response.status);
-        throw new Error('Image generation failed');
+        const errorText = await response.text();
+        console.error('Pollinations API error:', response.status, errorText);
+        throw new Error(`Image generation failed: ${response.status}`);
       }
       
       // Convert to base64 data URL
