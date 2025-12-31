@@ -58,11 +58,11 @@ function buildTattooPrompt(params) {
 
 // Size and price estimates
 const sizeEstimates = {
-  'tiny': { time: '30 min - 1 hour', price: '$100 - $150' },
-  'small': { time: '1 - 2 hours', price: '$150 - $300' },
-  'medium': { time: '2 - 4 hours', price: '$300 - $600' },
-  'large': { time: '4 - 8 hours', price: '$600 - $1200' },
-  'extra-large': { time: 'Multiple sessions', price: '$1200+' }
+  'tiny': { time: '30 min - 1 hour', price: '50€ - 80€' },
+  'small': { time: '1 - 2 hours', price: '80€ - 150€' },
+  'medium': { time: '2 - 4 hours', price: '150€ - 300€' },
+  'large': { time: '4 - 8 hours', price: '300€ - 600€' },
+  'extra-large': { time: 'Multiple sessions', price: '600€+' }
 };
 
 // POST /api/design/generate - Generate design concept with AI

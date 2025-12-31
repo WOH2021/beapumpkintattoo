@@ -351,11 +351,11 @@ const sizeToTime = {
 };
 
 const sizeToPrice = {
-    'tiny': '$100 - $150',
-    'small': '$150 - $300',
-    'medium': '$300 - $600',
-    'large': '$600 - $1200',
-    'extra-large': '$1200+'
+    'tiny': '50€ - 80€',
+    'small': '80€ - 150€',
+    'medium': '150€ - 300€',
+    'large': '300€ - 600€',
+    'extra-large': '600€+'
 };
 
 const generateDesignConcept = async () => {
