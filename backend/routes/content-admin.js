@@ -6,7 +6,7 @@
 
 const express = require('express');
 const Joi = require('joi');
-const { verifyAdminPassword } = require('../middleware/simple-auth');
+const { verifyAdminAuth } = require('../middleware/auth');
 const { supabase } = require('../db');
 
 const router = express.Router();
@@ -69,7 +69,7 @@ function validateRequest(schema) {
 /**
  * Get all blog posts
  */
-router.get('/blog', verifyAdminPassword, async (req, res) => {
+router.get('/blog', verifyAdminAuth, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('blog_posts')
@@ -86,7 +86,7 @@ router.get('/blog', verifyAdminPassword, async (req, res) => {
 /**
  * Create blog post
  */
-router.post('/blog', verifyAdminPassword, validateRequest(blogPostSchema), async (req, res) => {
+router.post('/blog', verifyAdminAuth, validateRequest(blogPostSchema), async (req, res) => {
   try {
     const { title, content, excerpt, featured_image, author, status } = req.body;
 
@@ -115,7 +115,7 @@ router.post('/blog', verifyAdminPassword, validateRequest(blogPostSchema), async
 /**
  * Update blog post
  */
-router.put('/blog/:id', verifyAdminPassword, validateRequest(blogPostSchema.fork(['title', 'content'], schema => schema.optional())), async (req, res) => {
+router.put('/blog/:id', verifyAdminAuth, validateRequest(blogPostSchema.fork(['title', 'content'], schema => schema.optional())), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -146,7 +146,7 @@ router.put('/blog/:id', verifyAdminPassword, validateRequest(blogPostSchema.fork
 /**
  * Delete blog post
  */
-router.delete('/blog/:id', verifyAdminPassword, async (req, res) => {
+router.delete('/blog/:id', verifyAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -169,7 +169,7 @@ router.delete('/blog/:id', verifyAdminPassword, async (req, res) => {
 /**
  * Get all portfolio items
  */
-router.get('/portfolio', verifyAdminPassword, async (req, res) => {
+router.get('/portfolio', verifyAdminAuth, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('portfolio_items')
@@ -186,7 +186,7 @@ router.get('/portfolio', verifyAdminPassword, async (req, res) => {
 /**
  * Create portfolio item
  */
-router.post('/portfolio', verifyAdminPassword, async (req, res) => {
+router.post('/portfolio', verifyAdminAuth, async (req, res) => {
   try {
     const { title, description, image_url, display_order, category } = req.body;
 
@@ -217,7 +217,7 @@ router.post('/portfolio', verifyAdminPassword, async (req, res) => {
 /**
  * Update portfolio item
  */
-router.put('/portfolio/:id', verifyAdminPassword, async (req, res) => {
+router.put('/portfolio/:id', verifyAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, image_url, display_order, category } = req.body;
@@ -248,7 +248,7 @@ router.put('/portfolio/:id', verifyAdminPassword, async (req, res) => {
 /**
  * Delete portfolio item
  */
-router.delete('/portfolio/:id', verifyAdminPassword, async (req, res) => {
+router.delete('/portfolio/:id', verifyAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -271,7 +271,7 @@ router.delete('/portfolio/:id', verifyAdminPassword, async (req, res) => {
 /**
  * Get all testimonials
  */
-router.get('/testimonials', verifyAdminPassword, async (req, res) => {
+router.get('/testimonials', verifyAdminAuth, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('testimonials')
@@ -288,7 +288,7 @@ router.get('/testimonials', verifyAdminPassword, async (req, res) => {
 /**
  * Update testimonial approval
  */
-router.patch('/testimonials/:id', verifyAdminPassword, async (req, res) => {
+router.patch('/testimonials/:id', verifyAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { is_approved } = req.body;
@@ -312,7 +312,7 @@ router.patch('/testimonials/:id', verifyAdminPassword, async (req, res) => {
 /**
  * Delete testimonial
  */
-router.delete('/testimonials/:id', verifyAdminPassword, async (req, res) => {
+router.delete('/testimonials/:id', verifyAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
 

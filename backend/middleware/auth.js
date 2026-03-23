@@ -6,7 +6,15 @@
 const jwt = require('jsonwebtoken');
 const { supabase } = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'your-secret-key';
+// ⚠️ CRITICAL: Validate JWT secret is configured
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;
+
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('CRITICAL: JWT_SECRET or SUPABASE_JWT_SECRET environment variable must be set in production');
+}
+
+// Use secure defaults only in development
+const finalJwtSecret = JWT_SECRET || 'dev-only-secret-change-in-production';
 
 /**
  * Verify JWT Token from Authorization header
@@ -35,7 +43,7 @@ async function verifyAdminAuth(req, res, next) {
     // ✅ Verify JWT signature (not just decode)
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET, {
+      decoded = jwt.verify(token, finalJwtSecret, {
         algorithms: ['HS256', 'HS512'],
       });
     } catch (error) {
@@ -91,7 +99,7 @@ async function verifyOptionalAuth(req, res, next) {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET, {
+      decoded = jwt.verify(token, finalJwtSecret, {
         algorithms: ['HS256', 'HS512'],
       });
     } catch (error) {
@@ -137,7 +145,7 @@ async function verifyAuth(req, res, next) {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET, {
+      decoded = jwt.verify(token, finalJwtSecret, {
         algorithms: ['HS256', 'HS512'],
       });
     } catch (error) {

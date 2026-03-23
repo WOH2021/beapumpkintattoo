@@ -15,7 +15,7 @@
     "express-rate-limit": "^7.1.5",
     "helmet": "^6.0.1",
     "joi": "^17.11.0",
-    "jsonwebtoken": "^9.1.2",
+    "jsonwebtoken": "^9.0.0",
     "pg": "^8.11.3"
   },
   "devDependencies": {

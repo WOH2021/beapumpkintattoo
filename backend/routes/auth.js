@@ -7,9 +7,24 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme123';
-const JWT_SECRET = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'your-secret-key';
+// ⚠️ CRITICAL: Environment variables MUST be set
+// Do not use unsafe defaults in production!
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
+// Validate that critical credentials are configured
+if (!ADMIN_PASSWORD && process.env.NODE_ENV === 'production') {
+  throw new Error('CRITICAL: ADMIN_PASSWORD environment variable must be set in production');
+}
+
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('CRITICAL: JWT_SECRET or SUPABASE_JWT_SECRET environment variable must be set in production');
+}
+
+// Use secure defaults only in development
+const finalAdminPassword = ADMIN_PASSWORD || 'dev-only-default-change-in-production';
+const finalJwtSecret = JWT_SECRET || 'dev-only-secret-change-in-production';
 
 /**
  * POST /api/auth/login
@@ -35,7 +50,7 @@ router.post('/login', (req, res) => {
     }
 
     // Verify password
-    if (password !== ADMIN_PASSWORD) {
+    if (password !== finalAdminPassword) {
       // Log security event (don't expose which field is wrong)
       console.warn('Failed login attempt from', req.ip);
       return res.status(401).json({
@@ -50,7 +65,7 @@ router.post('/login', (req, res) => {
         type: 'password-auth',
         iat: Math.floor(Date.now() / 1000),
       },
-      JWT_SECRET,
+      finalJwtSecret,
       {
         algorithm: 'HS256',
         expiresIn: JWT_EXPIRES_IN,
@@ -99,7 +114,7 @@ router.get('/verify', (req, res) => {
     }
 
     const token = authHeader.substring(7);
-    jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    jwt.verify(token, finalJwtSecret, { algorithms: ['HS256'] });
 
     res.json({
       success: true,
